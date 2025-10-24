@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ titulo_relatorio }}</title>
+    <style>
+        /* Estilos adicionais específicos para impressão */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 10pt; color: #343A40; }
+        .header { text-align: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #007BFF; }
+        .header h1 { color: #E21B27; font-size: 18pt; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #DEE2E6; padding: 8px; text-align: left; }
+        th { background-color: #F8F9FA; color: #E21B27; font-weight: bold; }
+        .data-entrada { color: #28A745; font-weight: 600; }
+        .data-saida { color: #DC3545; font-weight: 600; }
+        .info-block { margin-bottom: 15px; font-size: 11pt; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>LABROBO POINT</h1>
+        <h2>{{ titulo_relatorio }}</h2>
+    </div>
+
+    <div class="info-block">
+        <p><strong>Período:</strong> De {{ periodo_inicio }} até {{ periodo_fim }}</p>
+        {% if cpf_filtro %}
+            <p><strong>Usuário Filtrado:</strong> {{ pontos.first.usuario.get_full_name }} (CPF: {{ cpf_filtro }})</p>
+        {% endif %}
+        <p><strong>Data de Geração:</strong> {{ "now"|date:"d/m/Y H:i" }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Hora</th>
+                <th>Nome (Nível)</th>
+                <th>CPF</th>
+                <th>Tipo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ponto in pontos %}
+            <tr>
+                <td>{{ ponto.data_hora|date:"d/m/Y" }}</td>
+                <td>{{ ponto.data_hora|date:"H:i:s" }}</td>
+                <td>{{ ponto.usuario.get_full_name|default:ponto.usuario.username }} ({{ ponto.usuario.perfil.nivel_acesso }})</td>
+                <td>{{ ponto.usuario.perfil.cpf }}</td>
+                <td class="data-{{ ponto.tipo_ponto|lower }}">
+                    {{ ponto.tipo_ponto }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if not pontos %}
+        <p style="text-align: center; margin-top: 30px;">Nenhum registro de ponto encontrado para o período.</p>
+    {% endif %}
+
+</body>
+</html>

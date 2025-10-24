@@ -1,0 +1,78 @@
+{% extends "ponto_app/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="card ponto-card">
+        <h1>Registro de Ponto</h1>
+        <p>Insira o seu CPF para registrar entrada ou saída. O sistema determinará automaticamente.</p>
+        
+        <form id="ponto-form" onsubmit="handleBaterPonto(event)">
+            {% csrf_token %} <div class="form-group cpf-input-group">
+            <div class="form-group cpf-input-group">
+                <label for="cpf-input">CPF do Usuário (apenas números)</label>
+                <input type="number" id="cpf-input" placeholder="Ex: 00000000000" required maxlength="11">
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px 0;">
+                BATER PONTO AGORA
+            </button>
+        </form>
+        
+        <div id="ponto-message" class="action-message">
+            </div>
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    function handleBaterPonto(event) {
+        event.preventDefault();
+        const cpf = document.getElementById('cpf-input').value.trim();
+        const messageBox = document.getElementById('ponto-message');
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // Limpa a mensagem
+        messageBox.style.display = 'none';
+        messageBox.classList.remove('action-success', 'alert-danger');
+
+        fetch("{% url 'bater_ponto' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({ cpf: cpf })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                messageBox.textContent = data.message;
+                messageBox.classList.add('action-success');
+            } else {
+                messageBox.textContent = `ERRO: ${data.message}`;
+                messageBox.classList.add('alert-danger');
+            }
+            messageBox.style.display = 'block';
+            document.getElementById('cpf-input').value = '';
+        })
+        .catch(error => {
+    let errorMessage = 'Erro de conexão do servidor. Verifique o console para mais detalhes.';
+    
+    // Se o erro foi lançado intencionalmente na promessa (para status 4xx/5xx)
+    if (error.message && error.message.includes('Erro de servidor')) {
+        errorMessage = error.message;
+    } 
+    
+    // Tratamento para erro de rede puro (geralmente problema na URL ou servidor offline)
+    else if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        errorMessage = 'Erro de rede. Verifique se o servidor Django está rodando e se a URL está correta (http://127.0.0.1:8000).';
+    }
+    
+    messageBox.textContent = errorMessage;
+    messageBox.classList.add('alert-danger');
+    messageBox.style.display = 'block';
+    console.error('Erro ao bater ponto:', error);
+});
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "ponto_app/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="card profile-card">
+        <div class="profile-grid">
+            
+            <div class="profile-avatar">
+                <img id="profile-avatar-img" 
+                     src="{{ target_perfil.foto_perfil.url }}" 
+                     alt="Foto de Perfil">
+                     
+                <p style="margin-top: 10px;">{{ target_user.get_full_name|default:target_user.username }}</p>
+                <p style="font-size: 0.9em; color: var(--primary-color);">{{ target_perfil.get_nivel_acesso_display }}</p>
+                
+                {% if not is_editing_other %}
+                    <a href="{% url 'password_change' %}" class="btn btn-secondary" style="margin-top: 20px;">Alterar Senha</a>
+                {% endif %}
+            </div>
+            
+            <div class="profile-info">
+                <h2>Informações de Conta</h2>
+                
+                <form method="post" id="perfil-form" enctype="multipart/form-data" style="margin-top: 20px;">
+                    {% csrf_token %}
+                    
+                    {% for field in user_form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<small style="color: var(--danger-color);">{{ field.errors }}</small>{% endif %}
+                    </div>
+                    {% endfor %}
+
+                    {% for field in perfil_form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<small style="color: var(--danger-color);">{{ field.errors }}</small>{% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    
+                    {% if is_editing_other %}
+                        <a href="{% url 'gerenciar_usuarios' %}" class="btn btn-secondary">Cancelar</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

@@ -1,0 +1,215 @@
+{% extends "ponto_app/base.html" %}
+{% load static %}
+
+{% block title %}Gerar Relatório | LabRobo Point{% endblock %}
+
+{% block extra_head %}
+<style>
+.relatorio-table-container {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+.report-status-message {
+    padding: 15px;
+    text-align: center;
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <h1>Gerar Relatório de Ponto</h1>
+
+    <div class="relatorio-grid">
+        
+        <div class="card relatorio-card-options">
+            <h2>Configurar Filtros</h2>
+            <form id="relatorio-form" onsubmit="event.preventDefault(); carregarRelatorio();">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="filtro-tipo">Tipo de Período:</label>
+                    <select id="filtro-tipo" onchange="toggleCpfField()">
+                        <option value="dia">Dia Específico</option>
+                        <option value="semana">Semana (a partir da data)</option>
+                        <option value="mes">Mês (a partir da data)</option>
+                        <option value="anual">Ano (a partir da data)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="data-inicio">Selecione a Data (Qualquer data dentro do período):</label>
+                    <input type="date" id="data-inicio" required value="{{ 'now'|date:'Y-m-d' }}">
+                </div>
+                
+                <div class="form-group" id="cpf-group" style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <label for="cpf-filter">CPF do Usuário (Opcional - Deixar em branco para Relatório Geral):</label>
+                    <input type="number" id="cpf-filter" placeholder="Ex: 00000000000" maxlength="11">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
+                    Visualizar Relatório
+                </button>
+            </form>
+            
+            <button type="button" class="btn btn-secondary" style="width: 100%; margin-top: 15px;" onclick="generatePdfSimulation()">
+                Gerar PDF
+            
+        </div>
+        
+        <div class="card">
+            <h2>Resultado do Relatório <span id="periodo-display" style="font-size: 0.9em; color: var(--secondary-color);"></span></h2>
+            <div id="relatorio-output">
+                <div class="report-status-message">Configure os filtros e clique em Visualizar Relatório.</div>
+            </div>
+        </div>
+        
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    function getCsrfToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+    
+    // Função principal que chama a API do Django
+    function carregarRelatorio() {
+        const outputDiv = document.getElementById('relatorio-output');
+        const cpf = document.getElementById('cpf-filter').value.trim();
+        const tipo = document.getElementById('filtro-tipo').value;
+        const dataInicio = document.getElementById('data-inicio').value;
+
+        if (!dataInicio) {
+            outputDiv.innerHTML = '<div class="alert alert-danger">Selecione uma data para o filtro.</div>';
+            return;
+        }
+
+        outputDiv.innerHTML = '<div class="report-status-message" style="color: var(--primary-color);">Carregando dados...</div>';
+
+        const data = {
+            cpf: cpf,
+            tipo: tipo,
+            data_inicio: dataInicio,
+        };
+
+        fetch("{% url 'buscar_relatorio_pontos' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                renderizarTabela(data.dados, data.periodo);
+            } else {
+                outputDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+            }
+        })
+        .catch(error => {
+            outputDiv.innerHTML = '<div class="alert alert-danger">Erro de rede. Verifique a conexão com o servidor.</div>';
+            console.error('Erro ao buscar relatório:', error);
+        });
+    }
+
+    // Função que constrói a tabela HTML
+    function renderizarTabela(pontos, periodo) {
+        const outputDiv = document.getElementById('relatorio-output');
+        const periodoDisplay = document.getElementById('periodo-display');
+        
+        if (pontos.length === 0) {
+            outputDiv.innerHTML = '<div class="report-status-message">Nenhum registro de ponto encontrado para o período/usuário selecionado.</div>';
+            periodoDisplay.textContent = '';
+            return;
+        }
+
+        periodoDisplay.textContent = `(${periodo.inicio} a ${periodo.fim})`;
+
+        let tableHTML = `
+            <div class="relatorio-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Hora</th>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>Tipo</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        pontos.forEach(ponto => {
+            const tipoColor = ponto.tipo === 'ENTRADA' ? 'var(--success-color)' : 'var(--danger-color)';
+            tableHTML += `
+                <tr>
+                    <td>${ponto.data}</td>
+                    <td>${ponto.hora}</td>
+                    <td>${ponto.nome} (${ponto.nivel})</td>
+                    <td>${ponto.cpf}</td>
+                    <td style="color: ${tipoColor}; font-weight: 600;">${ponto.tipo}</td>
+                </tr>
+            `;
+        });
+        
+        tableHTML += `
+                </tbody>
+            </table>
+            </div>
+        `;
+        
+        outputDiv.innerHTML = tableHTML;
+    }
+
+    function generatePdfSimulation() {
+    const outputDiv = document.getElementById('relatorio-output');
+    const cpf = document.getElementById('cpf-filter').value.trim();
+    const tipo = document.getElementById('filtro-tipo').value;
+    const dataInicio = document.getElementById('data-inicio').value;
+
+    if (!dataInicio) {
+        outputDiv.innerHTML = '<div class="alert alert-danger">Selecione uma data para o filtro.</div>';
+        return;
+    }
+
+    const data = {
+        cpf: cpf,
+        tipo: tipo,
+        data_inicio: dataInicio,
+    };
+
+    // Abre a URL de PDF em uma nova aba
+    const url = "{% url 'gerar_relatorio_pdf' %}";
+    
+    // Para chamar uma rota POST em uma nova aba, é necessário usar um formulário temporário
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.target = '_blank'; // Abre em nova aba
+
+    // Adiciona o token CSRF
+    const csrfField = document.createElement('input');
+    csrfField.type = 'hidden';
+    csrfField.name = 'csrfmiddlewaretoken';
+    csrfField.value = getCsrfToken();
+    form.appendChild(csrfField);
+
+    // Adiciona os dados do JSON como um campo oculto (o Django irá ler o corpo da requisição)
+    const jsonField = document.createElement('input');
+    jsonField.type = 'hidden';
+    jsonField.name = 'json_data'; // Usaremos 'json_data' para enviar os filtros
+    jsonField.value = JSON.stringify(data);
+    form.appendChild(jsonField);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+</script>
+{% endblock %}

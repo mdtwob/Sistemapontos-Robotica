@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LabRobo Point{% endblock %}</title>
+    
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body onload="loadTheme()">
+    
+    {% csrf_token %} <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">
+                <a href="{% url 'tela_ponto' %}">
+                    <img src="{% static 'img/logo_robo.png' %}" alt="LabRobo Point Logo">
+                    LabRobo Point
+                </a>
+            </div>
+            <div class="nav-links" id="nav-links-container">
+                <a href="{% url 'tela_ponto' %}">Ponto</a>
+                
+                {% if user.is_authenticated %}
+                    {% if user.perfil.nivel_acesso in "ADMIN|PROFESSOR|ESTAGIARIO" %}
+                        <a href="{% url 'cadastro' %}">Cadastrar Novo Aluno</a>
+                        <a href="{% url 'relatorio' %}">Gerar Relatório</a>
+                    {% endif %}
+                    
+                    {% if user.perfil.nivel_acesso == "ADMIN" %}
+                        <a href="{% url 'gerenciar_usuarios' %}">Gerenciar Usuários</a>
+                    {% elif user.perfil.nivel_acesso in "PROFESSOR|ESTAGIARIO" %}
+                        <a href="{% url 'gerenciar_usuarios' %}">Gerenciar Alunos</a>
+                    {% endif %}
+                {% endif %}
+                
+            </div>
+            
+            <div class="user-profile">
+                <button onclick="toggleTheme()" class="theme-toggle-button" title="Alternar Tema">
+                    <span id="theme-toggle-icon" aria-hidden="true"></span>
+                </button>
+                
+                {% if user.is_authenticated %}
+                    <div class="user-info">
+                        <span>{{ user.get_full_name|default:user.username }} ({{ user.perfil.nivel_acesso }})</span>
+                    </div>
+                    <a href="{% url 'perfil' %}">
+                        <img 
+                            src="{{ user.perfil.foto_perfil.url }}" 
+                            alt="Foto de Perfil"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"
+                        >
+                    </a>
+                    
+                    <form method="post" action="{% url 'logout' %}" style="margin-left: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-secondary">Sair</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary">Login ADM/Professor</a>
+                {% endif %}
+                
+            </div>
+        </div>
+    </nav>
+    
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    {% block extra_js %}
+<script>
+    // Função para obter o token CSRF
+    function getCsrfToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+
+    function handleBaterPonto(event) {
+        event.preventDefault();
+        const cpf = document.getElementById('cpf-input').value.trim();
+        const messageBox = document.getElementById('ponto-message');
+        
+        // Limpa a mensagem anterior
+        messageBox.style.display = 'none';
+        messageBox.classList.remove('action-success', 'alert-danger');
+
+        if (cpf.length !== 11 || isNaN(cpf)) {
+            messageBox.textContent = 'Por favor, insira um CPF válido (11 dígitos).';
+            messageBox.classList.add('alert-danger');
+            messageBox.style.display = 'block';
+            return;
+        }
+
+        fetch("{% url 'bater_ponto' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // AQUI ESTÁ A CHAVE: Enviando o Token CSRF
+                'X-CSRFToken': getCsrfToken() 
+            },
+            body: JSON.stringify({ cpf: cpf })
+        })
+        .then(response => {
+            // Verifica o status HTTP para saber se é erro 404/400 ou sucesso
+            if (!response.ok) {
+                 // Lança um erro para ser capturado no .catch
+                 return response.json().then(errorData => {
+                    throw new Error(errorData.message || 'Erro de servidor.');
+                 });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Sucesso: Ponto registrado
+            messageBox.textContent = data.message;
+            messageBox.classList.add('action-success');
+            messageBox.style.display = 'block';
+            document.getElementById('cpf-input').value = '';
+        })
+        .catch(error => {
+            // Falha: Erro do servidor (404, 400, ou falha de conexão)
+            let errorMessage = error.message || 'Erro de conexão do servidor. Verifique o console para mais detalhes.';
+            
+            // Tratamento específico para o erro de token (embora não deva acontecer com a correção)
+            if (errorMessage.includes('CSRF')) {
+                 errorMessage = 'Erro de segurança (CSRF). Recarregue a página e tente novamente.';
+            }
+
+            messageBox.textContent = errorMessage;
+            messageBox.classList.add('alert-danger');
+            messageBox.style.display = 'block';
+            console.error('Erro ao bater ponto:', error);
+        });
+    }
+</script>
+{% endblock %}
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('light-mode');
+            
+            if (body.classList.contains('light-mode')) {
+                localStorage.setItem('theme', 'light');
+            } else {
+                localStorage.setItem('theme', 'dark');
+            }
+            
+            updateThemeIcon();
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const body = document.body;
+
+            if (savedTheme === 'light') {
+                body.classList.add('light-mode');
+            } else {
+                body.classList.remove('light-mode');
+            }
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const icon = document.getElementById('theme-toggle-icon');
+            if (icon) {
+                if (document.body.classList.contains('light-mode')) {
+                    icon.innerHTML = '&#9788;';
+                    icon.title = 'Mudar para Modo Escuro';
+                } else {
+                    icon.innerHTML = '&#9790;';
+                    icon.title = 'Mudar para Modo Claro';
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadTheme);
+    </script>
+</body>
+</html>

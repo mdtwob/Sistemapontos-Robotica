@@ -1,0 +1,105 @@
+{% extends "ponto_app/base.html" %}
+{% load static %}
+
+{% block title %}Gerenciar Usuários | LabRobo Point{% endblock %}
+
+{% block content %}
+    <h1>
+        {% if is_admin %}
+            Gerenciamento Completo de Usuários
+        {% else %}
+            Gerenciamento de Alunos e Usuários
+        {% endif %}
+    </h1>
+    
+    <div class="card">
+        <p style="margin-bottom: 20px;">
+            Clique em 'Editar' para mudar as informações. Apenas Administradores podem excluir ou editar perfis de Professor/Estagiário.
+        </p>
+
+        {% if is_admin %}
+        <div class="form-group" style="max-width: 300px;">
+            <label for="filtro-nivel">Filtrar por Nível de Acesso:</label>
+            <select id="filtro-nivel" class="form-control" onchange="applyFilter(this.value)">
+                {% for nivel_value, nivel_display in niveis_acesso %}
+                    <option value="{{ nivel_value }}" {% if current_filter == nivel_value %}selected{% endif %}>
+                        {{ nivel_display }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        
+        <div id="user-list-container">
+            <ul class="user-list">
+                {% for perfil in usuarios %}
+                <li class="user-item" id="user-{{ perfil.user.id }}">
+                    <div class="user-item-info">
+                        <div class="user-item-name">{{ perfil.user.get_full_name|default:perfil.user.username }}</div>
+                        <div class="user-item-role">
+                            Função: 
+                            <span style="font-weight: bold; color: {% if perfil.nivel_acesso == 'ADMIN' %}var(--primary-color){% elif perfil.nivel_acesso == 'PROFESSOR' %}var(--success-color){% else %}var(--text-color){% endif %};">
+                                {{ perfil.get_nivel_acesso_display }}
+                            </span>
+                             | CPF: {{ perfil.cpf }}
+                        </div>
+                    </div>
+                    <div class="user-item-actions">
+                        
+                        <a href="{% url 'editar_perfil_usuario' user_id=perfil.user.id %}" class="btn btn-primary">Editar</a>
+                        
+                        {% if is_admin and perfil.nivel_acesso != 'ADMIN' %}
+                            <button class="btn btn-danger" onclick="confirmExclusao({{ perfil.user.id }}, '{{ perfil.user.get_full_name|default:perfil.user.username }}')">Excluir</button>
+                        {% endif %}
+                    </div>
+                </li>
+                {% empty %}
+                <li class="user-item" style="justify-content: center; color: var(--secondary-color);">
+                    Nenhum usuário encontrado com as suas permissões e filtros atuais.
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    // Função para aplicar o filtro
+    function applyFilter(nivel) {
+        window.location.href = `{% url 'gerenciar_usuarios' %}?nivel=${nivel}`;
+    }
+
+    // Função para exclusão com AJAX
+    function confirmExclusao(userId, userName) {
+        if (confirm(`Tem certeza que deseja EXCLUIR o usuário ${userName}? Esta ação é irreversível!`)) {
+            // O token CSRF deve estar disponível no DOM (adicionado no base.html)
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value; 
+            
+            // CONSTRÓI A URL CORRETA
+            const url = `{% url 'excluir_usuario' user_id=0 %}`.replace('0', userId);
+            
+            fetch(url, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    const userElement = document.getElementById(`user-${userId}`);
+                    if (userElement) {
+                        userElement.remove();
+                    }
+                } else {
+                    alert(`Falha ao excluir: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                console.error('Erro de exclusão:', error);
+                alert('Erro de conexão ao tentar excluir o usuário.');
+            });
+        }
+    }
+</script>
+{% endblock %}
