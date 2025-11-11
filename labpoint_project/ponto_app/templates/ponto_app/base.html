@@ -19,50 +19,50 @@
 <!-- <body onload="loadTheme()"> -->
 
 {% csrf_token %}
-<nav class="navbar bg-body-tertiary">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'tela_ponto' %}">
-            <img src="{% static 'img/logo_robo.png' %}" class="rounded float-start" alt="LabRobo Point Logo" width="200"
-                height="180">
-        </a>
-
-        <div class="container px-4 text-center">
-            {% if user.is_authenticated %}
-            <div class="row gx-5">
-                <div class="col">
-                    <div class="p-2"><a class="navbar-brand" href="{% url 'perfil' %}">
-                            <img src="{{ user.perfil.foto_perfil.url }}" alt="Foto de Perfil" width="100" height="80"
-                                class="d-inline-block align-text-top">
-                            {{ user.get_full_name|default:user.username }}({{ user.perfil.nivel_acesso }})
-                        </a> </div>
-                </div>
-
-                <div class="col">
-                    <form class="d-flex" method="post" action="{% url 'logout' %}">
-                        <div class="p-2">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-lg"><i
-                                    class="bi bi-box-arrow-in-left"></i>Sair</button>
-                            {% else %}
-                            <a href="{% url 'login' %}" class="btn btn-warning btn-lg"><i
-                                    class="bi bi-shield-lock"></i>Acesso
-                                Administrativo</a>
-                        </div>
-                        <div class="p-2">
-                            <a href="{% url 'login' %}" class="btn btn-secondary btn-lg"><i
-                                    class="bi bi-person-circle"></i>Cadastro</a>
-                            {% endif %}
-                    </form>
-                </div>
-                <div class="p-2">
-                    <button onclick="toggleTheme()" class="btn btn-secondary btn-lg" title="Alternar Tema"><i
-                            class="bi bi-moon-fill"></i>Tema Escuro</button>
-                </div>
-            </div>
+<div class="container-fluid">
+    <div class="row align-items-center justify-content-between">
+        <div class="col-md-auto">
+            <a href="{% url 'tela_ponto' %}">
+                <img src="{% static 'img/logo_robo.png' %}" class="rounded float-start" alt="LabRobo Point Logo"
+                    width="160" height="140">
+            </a>
         </div>
+
+        {% if user.is_authenticated %}
+        <div class="col-md-auto">
+            <a href="{% url 'perfil' %}">
+                <img src="{{ user.perfil.foto_perfil.url }}" alt="Foto de Perfil" width="100" height="80"
+                    class="d-inline-block align-text-top text-nowrap">
+                {{ user.get_full_name|default:user.username }}({{ user.perfil.nivel_acesso }})
+            </a>
+        </div>
+
+        <form class="col-md-auto" method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+        
+            
+            <button type="submit" class="btn btn-danger btn-lg"><i class="bi bi-box-arrow-in-left text-nowrap"></i>Sair</button>
+
+        </form>
+
+        {% else %}
+        <div class="col-md-auto">
+            <a href="{% url 'login' %}" class="btn btn-warning btn-lg text-nowrap"><i class="bi bi-shield-lock"></i>Acesso Administrativo</a>
+        </div>
+            
+        {% endif %}            
+             
+        <div class="col-md-auto">
+                <a href="{% url 'login' %}" class="btn btn-secondary btn-lg text-nowrap"><i
+                        class="bi bi-person-circle"></i>Cadastro</a>
+            </div>
+        <div class="col-md-auto">
+                <button onclick="toggleTheme()" class="btn btn-secondary btn-lg text-nowrap" title="Alternar Tema"><i
+                        class="bi bi-moon-fill"></i>Tema Escuro</button>
+            </div>
+
     </div>
-    </div>
-</nav>
+</div>
 <!-- <a href="{% url 'tela_ponto' %}">Ponto</a> -->
 
 {% if user.is_authenticated %}
