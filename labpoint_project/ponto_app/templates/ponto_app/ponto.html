@@ -2,25 +2,42 @@
 {% load static %}
 
 {% block content %}
-    <div class="card ponto-card">
-        <h1>Registro de Ponto</h1>
-        <p>Insira o seu CPF para registrar entrada ou saída. O sistema determinará automaticamente.</p>
-        
-        <form id="ponto-form" onsubmit="handleBaterPonto(event)">
-            {% csrf_token %} <div class="form-group cpf-input-group">
-            <div class="form-group cpf-input-group">
-                <label for="cpf-input">CPF do Usuário (apenas números)</label>
-                <input type="number" id="cpf-input" placeholder="Ex: 00000000000" required maxlength="11">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card shadow-lg border-0">
+                <div class="card-header text-center bg-primary text-white">
+                    <h3 class="mb-0">Registro de Ponto</h3>
+                </div>
+
+                <div class="card-body">
+
+                    <p class="text-center text-muted">
+                        Insira seu CPF para registrar entrada ou saída.
+                    </p>
+
+                    <form id="ponto-form" onsubmit="handleBaterPonto(event)">
+                        {% csrf_token %}
+
+                        <div class="form-group mb-3">
+                            <label for="cpf-input" class="form-label">CPF (apenas números)</label>
+                            <input type="number" id="cpf-input" class="form-control" placeholder="00000000000" required maxlength="11">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                            Bater Ponto Agora
+                        </button>
+                    </form>
+
+                    <div id="ponto-message" class="mt-3 text-center" style="display: none;"></div>
+
+                </div>
             </div>
-            
-            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px 0;">
-                BATER PONTO AGORA
-            </button>
-        </form>
-        
-        <div id="ponto-message" class="action-message">
-            </div>
+
+        </div>
     </div>
+</div>
 {% endblock content %}
 
 {% block extra_js %}

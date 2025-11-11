@@ -4,63 +4,80 @@
 {% block title %}Gerenciar Usuários | LabRobo Point{% endblock %}
 
 {% block content %}
-    <h1>
-        {% if is_admin %}
-            Gerenciamento Completo de Usuários
-        {% else %}
-            Gerenciamento de Alunos e Usuários
-        {% endif %}
-    </h1>
-    
-    <div class="card">
-        <p style="margin-bottom: 20px;">
-            Clique em 'Editar' para mudar as informações. Apenas Administradores podem excluir ou editar perfis de Professor/Estagiário.
-        </p>
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold">
+            {% if is_admin %}
+                Gerenciamento Completo de Usuários
+            {% else %}
+                Gerenciamento de Alunos e Usuários
+            {% endif %}
+        </h2>
+    </div>
+
+    <p class="text-muted">
+        Clique em <strong>Editar</strong> para mudar as informações. Apenas Administradores podem excluir ou editar perfis de Professor/Estagiário.
+    </p>
+
+    <div class="card shadow-sm p-4">
 
         {% if is_admin %}
-        <div class="form-group" style="max-width: 300px;">
-            <label for="filtro-nivel">Filtrar por Nível de Acesso:</label>
-            <select id="filtro-nivel" class="form-control" onchange="applyFilter(this.value)">
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label fw-semibold">Filtrar por Nível de Acesso:</label>
+            <select id="filtro-nivel" class="form-select" onchange="applyFilter(this.value)">
                 {% for nivel_value, nivel_display in niveis_acesso %}
-                    <option value="{{ nivel_value }}" {% if current_filter == nivel_value %}selected{% endif %}>
-                        {{ nivel_display }}
-                    </option>
+                <option value="{{ nivel_value }}" {% if current_filter == nivel_value %}selected{% endif %}>
+                    {{ nivel_display }}
+                </option>
                 {% endfor %}
             </select>
         </div>
         {% endif %}
-        
-        <div id="user-list-container">
-            <ul class="user-list">
+
+        <div id="user-list-container" class="mt-4">
+            <ul class="list-group">
+
                 {% for perfil in usuarios %}
-                <li class="user-item" id="user-{{ perfil.user.id }}">
-                    <div class="user-item-info">
-                        <div class="user-item-name">{{ perfil.user.get_full_name|default:perfil.user.username }}</div>
-                        <div class="user-item-role">
-                            Função: 
-                            <span style="font-weight: bold; color: {% if perfil.nivel_acesso == 'ADMIN' %}var(--primary-color){% elif perfil.nivel_acesso == 'PROFESSOR' %}var(--success-color){% else %}var(--text-color){% endif %};">
+                <li class="list-group-item d-flex justify-content-between align-items-center py-3" id="user-{{ perfil.user.id }}">
+
+                    <div>
+                        <h5 class="mb-1">{{ perfil.user.get_full_name|default:perfil.user.username }}</h5>
+                        <small class="text-muted">
+                            Função:
+                            <span class="fw-bold 
+                                {% if perfil.nivel_acesso == 'ADMIN' %} text-danger 
+                                {% elif perfil.nivel_acesso == 'PROFESSOR' %} text-success 
+                                {% else %} text-primary {% endif %}">
                                 {{ perfil.get_nivel_acesso_display }}
                             </span>
-                             | CPF: {{ perfil.cpf }}
-                        </div>
+                            | CPF: {{ perfil.cpf }}
+                        </small>
                     </div>
-                    <div class="user-item-actions">
-                        
-                        <a href="{% url 'editar_perfil_usuario' user_id=perfil.user.id %}" class="btn btn-primary">Editar</a>
-                        
+
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'editar_perfil_usuario' user_id=perfil.user.id %}" class="btn btn-sm btn-primary">
+                            Editar
+                        </a>
+
                         {% if is_admin and perfil.nivel_acesso != 'ADMIN' %}
-                            <button class="btn btn-danger" onclick="confirmExclusao({{ perfil.user.id }}, '{{ perfil.user.get_full_name|default:perfil.user.username }}')">Excluir</button>
+                        <button class="btn btn-sm btn-danger" onclick="confirmExclusao({{ perfil.user.id }}, '{{ perfil.user.get_full_name|default:perfil.user.username }}')">
+                            Excluir
+                        </button>
                         {% endif %}
                     </div>
+
                 </li>
                 {% empty %}
-                <li class="user-item" style="justify-content: center; color: var(--secondary-color);">
+                <li class="list-group-item text-center text-secondary py-3">
                     Nenhum usuário encontrado com as suas permissões e filtros atuais.
                 </li>
                 {% endfor %}
+
             </ul>
         </div>
     </div>
+</div>
 {% endblock content %}
 
 {% block extra_js %}

@@ -4,43 +4,46 @@
 {% block title %}Cadastro de Novo Usuário | LabRobo Point{% endblock %}
 
 {% block content %}
-    <div class="card" style="max-width: 600px; margin: 0 auto;">
-        <h1>Cadastrar Novo Usuário</h1>
-        <p>Preencha os dados abaixo para criar uma nova conta de acesso.</p>
-        
+<div class="container mt-5">
+    <div class="card shadow p-4" style="max-width: 650px; margin: 0 auto;">
+        <h2 class="text-center mb-3">Cadastrar Novo Usuário</h2>
+        <p class="text-center text-muted">Preencha os dados para criar uma nova conta.</p>
+
         {% if messages %}
             {% for message in messages %}
-                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-success{% endif %}" style="text-align: left;">
+                <div class="alert alert-{{ message.tags }} text-center">
                     {{ message }}
                 </div>
             {% endfor %}
         {% endif %}
-        
+
         <form method="post" action="{% url 'cadastro' %}">
             {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="username">Nome de Usuário</label>
-                <input type="text" id="username" name="username" required>
+
+            <div class="mb-3">
+                <label class="form-label">Nome de Usuário</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Ex.: joaosilva" required>
             </div>
-            <div class="form-group">
-                <label for="nome">Nome Completo</label>
-                <input type="text" id="nome" name="first_name" required>
+
+            <div class="mb-3">
+                <label class="form-label">Nome Completo</label>
+                <input type="text" class="form-control" id="nome" name="first_name" placeholder="Ex.: João da Silva" required>
             </div>
-            <div class="form-group">
-                <label for="email-aluno">E-mail</label>
-                <input type="email" id="email-aluno" name="email" required>
+
+            <div class="mb-3">
+                <label class="form-label">E-mail</label>
+                <input type="email" class="form-control" id="email-aluno" name="email" placeholder="exemplo@email.com" required>
             </div>
-            <div class="form-group">
-                <label for="cpf">CPF (Apenas números)</label>
-                <input type="text" id="cpf" name="cpf" placeholder="Apenas números" required maxlength="11">
+
+            <div class="mb-3">
+                <label class="form-label">CPF (Apenas números)</label>
+                <input type="text" class="form-control" id="cpf" name="cpf" maxlength="11" placeholder="00000000000" required>
             </div>
-            
-            <div class="form-group">
-                <label for="funcao">Função no Laboratório</label>
-                <select id="funcao" name="nivel_acesso" required 
-                    {% if user.perfil.nivel_acesso != 'ADMIN' %} disabled {% endif %}
-                >
+
+            <div class="mb-3">
+                <label class="form-label">Função no Laboratório</label>
+                <select class="form-select" id="funcao" name="nivel_acesso" required
+                    {% if user.perfil.nivel_acesso != 'ADMIN' %} disabled {% endif %}>
                     <option value="ALUNO">Aluno</option>
                     {% if user.perfil.nivel_acesso == 'ADMIN' %}
                         <option value="ESTAGIARIO">Estagiário</option>
@@ -52,13 +55,14 @@
                     <input type="hidden" name="nivel_acesso" value="ALUNO">
                 {% endif %}
             </div>
-            
-            <div class="form-group">
-                <label for="password">Senha Inicial</label>
-                <input type="password" id="password" name="password" required>
+
+            <div class="mb-4">
+                <label class="form-label">Senha Inicial</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Defina uma senha" required>
             </div>
-            
-            <button type="submit" class="btn btn-success" style="width: 100%;">Cadastrar Usuário</button>
+
+            <button type="submit" class="btn btn-success w-100 py-2">Cadastrar Usuário</button>
         </form>
     </div>
+</div>
 {% endblock content %}

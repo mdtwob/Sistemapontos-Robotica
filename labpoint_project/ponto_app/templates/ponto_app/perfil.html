@@ -1,52 +1,69 @@
 {% extends "ponto_app/base.html" %}
 {% load static %}
-
 {% block content %}
-    <div class="card profile-card">
-        <div class="profile-grid">
-            
-            <div class="profile-avatar">
-                <img id="profile-avatar-img" 
-                     src="{{ target_perfil.foto_perfil.url }}" 
+<div class="container py-5 d-flex justify-content-center">
+    <div class="card shadow-lg p-4" style="max-width: 900px; width: 100%; border-radius: 14px;">
+
+        <div class="row g-4 align-items-start">
+
+            <!-- Lado Esquerdo -->
+            <div class="col-md-4 text-center border-end">
+                <img id="profile-avatar-img"
+                     src="{{ target_perfil.foto_perfil.url }}"
+                     class="rounded-circle shadow mb-3"
+                     style="width: 150px; height: 150px; object-fit: cover;"
                      alt="Foto de Perfil">
-                     
-                <p style="margin-top: 10px;">{{ target_user.get_full_name|default:target_user.username }}</p>
-                <p style="font-size: 0.9em; color: var(--primary-color);">{{ target_perfil.get_nivel_acesso_display }}</p>
-                
+
+                <h5 class="fw-semibold mt-2">{{ target_user.get_full_name|default:target_user.username }}</h5>
+                <p class="text-primary mb-3" style="font-size: .9rem;">
+                    {{ target_perfil.get_nivel_acesso_display }}
+                </p>
+
                 {% if not is_editing_other %}
-                    <a href="{% url 'password_change' %}" class="btn btn-secondary" style="margin-top: 20px;">Alterar Senha</a>
+                    <a href="{% url 'password_change' %}" class="btn btn-outline-secondary btn-sm">
+                        Alterar Senha
+                    </a>
                 {% endif %}
             </div>
-            
-            <div class="profile-info">
-                <h2>Informações de Conta</h2>
-                
-                <form method="post" id="perfil-form" enctype="multipart/form-data" style="margin-top: 20px;">
+
+            <!-- Lado Direito -->
+            <div class="col-md-8">
+                <h4 class="fw-semibold mb-3">Informações de Conta</h4>
+
+                <form method="post" id="perfil-form" enctype="multipart/form-data">
                     {% csrf_token %}
-                    
+
                     {% for field in user_form %}
-                    <div class="form-group">
-                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}<small style="color: var(--danger-color);">{{ field.errors }}</small>{% endif %}
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <small class="text-danger">{{ field.errors }}</small>
+                            {% endif %}
+                        </div>
                     {% endfor %}
 
                     {% for field in perfil_form %}
-                    <div class="form-group">
-                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}<small style="color: var(--danger-color);">{{ field.errors }}</small>{% endif %}
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <small class="text-danger">{{ field.errors }}</small>
+                            {% endif %}
+                        </div>
                     {% endfor %}
-                    
-                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                    
-                    {% if is_editing_other %}
-                        <a href="{% url 'gerenciar_usuarios' %}" class="btn btn-secondary">Cancelar</a>
-                    {% endif %}
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary px-4">Salvar Alterações</button>
+
+                        {% if is_editing_other %}
+                            <a href="{% url 'gerenciar_usuarios' %}" class="btn btn-outline-secondary px-4">Cancelar</a>
+                        {% endif %}
+                    </div>
                 </form>
             </div>
+
         </div>
     </div>
+</div>
 {% endblock content %}
