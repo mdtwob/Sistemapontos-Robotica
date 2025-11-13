@@ -30,9 +30,14 @@
 
         {% if user.is_authenticated %}
         <div class="col-md-auto">
-            <a href="{% url 'perfil' %}">
+            <a class="btn btn-secondary btn-lg text-nowrap" href="{% url 'perfil' %}">
+                {% if user.perfil.foto_perfil %}
                 <img src="{{ user.perfil.foto_perfil.url }}" alt="Foto de Perfil" width="100" height="80"
-                    class="d-inline-block align-text-top text-nowrap">
+                    class="img-fluid align-text-center text-nowrap">
+                {% else %}
+                <img src="{% static 'img/default.png' %}" alt="Foto de Perfil" width="100" height="80"
+        class="d-inline-block align-text-center text-nowrap">
+                {% endif %}
                 {{ user.get_full_name|default:user.username }}({{ user.perfil.nivel_acesso }})
             </a>
         </div>
@@ -53,30 +58,33 @@
         {% endif %}            
              
         <div class="col-md-auto">
-                <a href="{% url 'login' %}" class="btn btn-secondary btn-lg text-nowrap"><i
-                        class="bi bi-person-circle"></i>Cadastro</a>
-            </div>
-        <div class="col-md-auto">
                 <button onclick="toggleTheme()" class="btn btn-secondary btn-lg text-nowrap" title="Alternar Tema"><i
                         class="bi bi-moon-fill"></i>Tema Escuro</button>
             </div>
-
+    </div>
+    <div class="row  align-items-center justify-content-evenly">
+        {% if user.is_authenticated %}
+        {% if user.perfil.nivel_acesso in "ADMIN|PROFESSOR|ESTAGIARIO" %}
+        <div class="col-md-auto">
+            <a class="btn btn-info btn-lg text-nowrap" href="{% url 'cadastro' %}"><i class="bi bi-person-plus"></i>Cadastrar Novo Aluno</a>
+        </div>
+        <div class="col-md-auto">
+            <a class="btn btn-info btn-lg text-nowrap" href="{% url 'relatorio' %}"><i class="bi bi-file-earmark-plus"></i>Gerar Relatório</a>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if user.perfil.nivel_acesso == "ADMIN" %}
+        <div class="col-md-auto">
+            <a class="btn btn-info btn-lg text-nowrap" href="{% url 'gerenciar_usuarios' %}"><i class="bi bi-person-gear"></i>Gerenciar Usuários</a>
+        </div>
+        {% elif user.perfil.nivel_acesso in "PROFESSOR|ESTAGIARIO" %}
+        <div class="col-md-auto">
+            <a class="btn btn-info btn-lg text-nowrap" href="{% url 'gerenciar_usuarios' %}"><i class="bi bi-person-vcard"></i>Gerenciar Alunos</a>
+        </div>
+        {% endif %}
     </div>
 </div>
 <!-- <a href="{% url 'tela_ponto' %}">Ponto</a> -->
-
-{% if user.is_authenticated %}
-{% if user.perfil.nivel_acesso in "ADMIN|PROFESSOR|ESTAGIARIO" %}
-<a href="{% url 'cadastro' %}">Cadastrar Novo Aluno</a>
-<a href="{% url 'relatorio' %}">Gerar Relatório</a>
-{% endif %}
-
-{% if user.perfil.nivel_acesso == "ADMIN" %}
-<a href="{% url 'gerenciar_usuarios' %}">Gerenciar Usuários</a>
-{% elif user.perfil.nivel_acesso in "PROFESSOR|ESTAGIARIO" %}
-<a href="{% url 'gerenciar_usuarios' %}">Gerenciar Alunos</a>
-{% endif %}
-{% endif %}
 
 <div>
     {% block content %}
