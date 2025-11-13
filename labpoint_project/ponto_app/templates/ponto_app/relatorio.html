@@ -20,54 +20,65 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Gerar Relatório de Ponto</h1>
+<div class="container mt-4">
 
-    <div class="relatorio-grid">
-        
-        <div class="card relatorio-card-options">
-            <h2>Configurar Filtros</h2>
-            <form id="relatorio-form" onsubmit="event.preventDefault(); carregarRelatorio();">
-                {% csrf_token %}
-                
-                <div class="form-group">
-                    <label for="filtro-tipo">Tipo de Período:</label>
-                    <select id="filtro-tipo" onchange="toggleCpfField()">
-                        <option value="dia">Dia Específico</option>
-                        <option value="semana">Semana (a partir da data)</option>
-                        <option value="mes">Mês (a partir da data)</option>
-                        <option value="anual">Ano (a partir da data)</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="data-inicio">Selecione a Data (Qualquer data dentro do período):</label>
-                    <input type="date" id="data-inicio" required value="{{ 'now'|date:'Y-m-d' }}">
-                </div>
-                
-                <div class="form-group" id="cpf-group" style="border-top: 1px solid var(--border-color); padding-top: 15px;">
-                    <label for="cpf-filter">CPF do Usuário (Opcional - Deixar em branco para Relatório Geral):</label>
-                    <input type="number" id="cpf-filter" placeholder="Ex: 00000000000" maxlength="11">
-                </div>
+    <h2 class="text-center mb-4 fw-bold">Relatório de Ponto</h2>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
-                    Visualizar Relatório
+    <div class="row g-4">
+
+        <!-- CARD DE FILTROS -->
+        <div class="col-lg-4 col-md-5">
+            <div class="card shadow-sm p-3">
+                <h5 class="mb-3">Filtros</h5>
+
+                <form id="relatorio-form" onsubmit="event.preventDefault(); carregarRelatorio();">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tipo de Período</label>
+                        <select class="form-select" id="filtro-tipo" onchange="toggleCpfField()">
+                            <option value="dia">Dia</option>
+                            <option value="semana">Semana</option>
+                            <option value="mes">Mês</option>
+                            <option value="anual">Ano</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Data Inicial</label>
+                        <input type="date" id="data-inicio" class="form-control" required value="{{ 'now'|date:'Y-m-d' }}">
+                    </div>
+
+                    <div class="mb-3" id="cpf-group">
+                        <label class="form-label fw-semibold">CPF (opcional)</label>
+                        <input type="text" id="cpf-filter" class="form-control" maxlength="11" placeholder="00000000000">
+                    </div>
+
+                    <button class="btn btn-primary w-100 py-2">Visualizar</button>
+                </form>
+
+                <button onclick="generatePdfSimulation()" class="btn btn-secondary w-100 mt-2 py-2">
+                    Gerar PDF
                 </button>
-            </form>
-            
-            <button type="button" class="btn btn-secondary" style="width: 100%; margin-top: 15px;" onclick="generatePdfSimulation()">
-                Gerar PDF
-            
-        </div>
-        
-        <div class="card">
-            <h2>Resultado do Relatório <span id="periodo-display" style="font-size: 0.9em; color: var(--secondary-color);"></span></h2>
-            <div id="relatorio-output">
-                <div class="report-status-message">Configure os filtros e clique em Visualizar Relatório.</div>
             </div>
         </div>
-        
+
+        <!-- CARD RESULTADOS -->
+        <div class="col-lg-8 col-md-7">
+            <div class="card shadow-sm p-3">
+                <h5 class="mb-2">Resultado <span id="periodo-display" class="text-muted"></span></h5>
+                <div id="relatorio-output" class="mt-3" style="min-height:120px;">
+                    <div class="alert alert-info text-center">
+                        Configure os filtros e clique em <strong>Visualizar</strong>.
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-{% endblock content %}
+</div>
+{% endblock %}
+
 
 {% block extra_js %}
 <script>
@@ -213,3 +224,4 @@
 }
 </script>
 {% endblock %}
+
