@@ -16,10 +16,9 @@
     <!-- <link rel="stylesheet" href="{% static 'css/styles.css' %}"> -->
     {% block extra_head %}{% endblock %}
 </head>
-<!-- <body onload="loadTheme()"> -->
 
-{% csrf_token %}
-<div class="container-fluid">
+{% csrf_token %} 
+<div class="shadow-lg card container-fluid row-gap-2">
     <div class="row align-items-center justify-content-between">
         <div class="col-md-auto">
             <a href="{% url 'tela_ponto' %}">
@@ -32,11 +31,11 @@
         <div class="col-md-auto">
             <a class="btn btn-secondary btn-lg text-nowrap" href="{% url 'perfil' %}">
                 {% if user.perfil.foto_perfil %}
-                <img src="{{ user.perfil.foto_perfil.url }}" alt="Foto de Perfil" width="100" height="80"
-                    class="img-fluid align-text-center text-nowrap">
+                <img src="{{ user.perfil.foto_perfil.url }}" alt="Foto de Perfil" width="90" height="90"
+                    class="img-fluid rounded-circle align-text-center text-nowrap">
                 {% else %}
-                <img src="{% static 'img/default.png' %}" alt="Foto de Perfil" width="100" height="80"
-        class="d-inline-block align-text-center text-nowrap">
+                <img src="{% static 'img/default.png' %}" alt="Foto de Perfil" width="90" height="80"
+        class="img-fluid rounded-circle align-text-center text-nowrap">
                 {% endif %}
                 {{ user.get_full_name|default:user.username }}({{ user.perfil.nivel_acesso }})
             </a>
@@ -52,35 +51,39 @@
 
         {% else %}
         <div class="col-md-auto">
-            <a href="{% url 'login' %}" class="btn btn-warning btn-lg text-nowrap"><i class="bi bi-shield-lock"></i>Acesso Administrativo</a>
+            <a href="{% url 'login' %}" class="btn btn-danger btn-lg text-nowrap"><i class="bi bi-shield-lock"></i>Acesso Administrativo</a>
         </div>
             
         {% endif %}            
              
         <div class="col-md-auto">
-                <button onclick="toggleTheme()" class="btn btn-secondary btn-lg text-nowrap" title="Alternar Tema"><i
-                        class="bi bi-moon-fill"></i>Tema Escuro</button>
+                <button class="btn btn-lg text-nowrap" id="theme-toggle" title="Alternar Tema"><i
+                        class="bi bi-moon-fill" id="icon-light"></i>
+                    <i class="bi bi-brightness-high" id="icon-dark"></i>
+                    <span id="theme-text"></span>
+                    </button>
             </div>
     </div>
-    <div class="row  align-items-center justify-content-evenly">
+    <div class="row  align-items-center justify-content-evenly mb-4">
         {% if user.is_authenticated %}
         {% if user.perfil.nivel_acesso in "ADMIN|PROFESSOR|ESTAGIARIO" %}
         <div class="col-md-auto">
-            <a class="btn btn-info btn-lg text-nowrap" href="{% url 'cadastro' %}"><i class="bi bi-person-plus"></i>Cadastrar Novo Aluno</a>
+            <a class="btn btn-danger btn-lg text-nowrap" href="{% url 'cadastro' %}"><i class="bi bi-person-plus"></i>Cadastrar Novo Aluno</a>
         </div>
         <div class="col-md-auto">
-            <a class="btn btn-info btn-lg text-nowrap" href="{% url 'relatorio' %}"><i class="bi bi-file-earmark-plus"></i>Gerar Relatório</a>
+            <a class="btn btn-danger btn-lg text-nowrap" href="{% url 'relatorio' %}"><i class="bi bi-file-earmark-plus"></i>Gerar Relatório</a>
         </div>
         {% endif %}
         {% endif %}
         {% if user.perfil.nivel_acesso == "ADMIN" %}
         <div class="col-md-auto">
-            <a class="btn btn-info btn-lg text-nowrap" href="{% url 'gerenciar_usuarios' %}"><i class="bi bi-person-gear"></i>Gerenciar Usuários</a>
+            <a class="btn btn-danger btn-lg text-nowrap" href="{% url 'gerenciar_usuarios' %}"><i class="bi bi-person-gear"></i>Gerenciar Usuários</a>
         </div>
         {% elif user.perfil.nivel_acesso in "PROFESSOR|ESTAGIARIO" %}
         <div class="col-md-auto">
-            <a class="btn btn-info btn-lg text-nowrap" href="{% url 'gerenciar_usuarios' %}"><i class="bi bi-person-vcard"></i>Gerenciar Alunos</a>
+            <a class="btn btn-danger btn-lg text-nowrap" href="{% url 'gerenciar_usuarios' %}"><i class="bi bi-person-vcard"></i>Gerenciar Alunos</a>
         </div>
+    </br>
         {% endif %}
     </div>
 </div>
@@ -157,47 +160,58 @@
     }
 </script>
 {% endblock %}
-
+'"'
 <script>
-    function toggleTheme() {
-        const body = document.body;
-        body.classList.toggle('light-mode');
+const toggleButton = document.getElementById('theme-toggle');
+const htmlElement = document.documentElement;
+const themeText = document.getElementById('theme-text');
+const iconDark = document.getElementById('icon-dark');
+const iconLight = document.getElementById('icon-light');
 
-        if (body.classList.contains('light-mode')) {
-            localStorage.setItem('theme', 'light');
-        } else {
-            localStorage.setItem('theme', 'dark');
-        }
-
-        updateThemeIcon();
+// Função central para atualizar o UI (ícone e texto)
+function updateUI(theme) {
+    if (theme === 'dark') {
+        toggleButton.classList.remove('btn-dark');
+        toggleButton.classList.add('btn-light');
+        themeText.textContent = 'Tema Claro';
+        iconDark.style.display = 'block'; // Mostra a lua
+        iconLight.style.display = 'none'; // Esconde o sol
+    } else {
+        toggleButton.classList.remove('btn-light');
+        toggleButton.classList.add('btn-dark');
+        themeText.textContent = 'Tema Escuro';
+        iconDark.style.display = 'none'; // Esconde a lua
+        iconLight.style.display = 'block'; // Mostra o sol
     }
+}
 
-    function loadTheme() {
-        const savedTheme = localStorage.getItem('theme');
-        const body = document.body;
+// 1. Função para aplicar o tema salvo
+function applySavedTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    htmlElement.setAttribute('data-bs-theme', savedTheme);
+    
+    // Atualiza o texto e o ícone na inicialização
+    updateUI(savedTheme);
+    
+    // (Opcional: Mantenha aqui o gerenciamento de classes CSS customizadas, se necessário)
+}
 
-        if (savedTheme === 'light') {
-            body.classList.add('light-mode');
-        } else {
-            body.classList.remove('light-mode');
-        }
-        updateThemeIcon();
-    }
+// 2. Alternar o tema ao clicar no botão
+toggleButton.addEventListener('click', () => {
+    const currentTheme = htmlElement.getAttribute('data-bs-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-    function updateThemeIcon() {
-        const icon = document.getElementById('theme-toggle-icon');
-        if (icon) {
-            if (document.body.classList.contains('light-mode')) {
-                icon.innerHTML = '&#9788;';
-                icon.title = 'Mudar para Modo Escuro';
-            } else {
-                icon.innerHTML = '&#9790;';
-                icon.title = 'Mudar para Modo Claro';
-            }
-        }
-    }
+    htmlElement.setAttribute('data-bs-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    // Atualiza o texto e o ícone na alternância
+    updateUI(newTheme);
 
-    document.addEventListener('DOMContentLoaded', loadTheme);
+    // (Opcional: Mantenha aqui o gerenciamento de classes CSS customizadas, se necessário)
+});
+
+// 3. Aplica o tema ao carregar a página
+applySavedTheme();
 </script>
 </body>
 

@@ -11,17 +11,17 @@
                 {% if user.perfil.foto_perfil %}
                 <img class="img-thumbnail" src="{{ target_perfil.foto_perfil.url }}">
                 {% else %}
-                <img src="{% static 'img/default.png' %}" alt="Foto de Perfil" width="100" height="80"
-        class="d-inline-block align-text-center text-nowrap">
+                <img src="{% static 'img/default.png' %}" alt="Foto de Perfil" width="200" height="80"
+        class="img-fluid rounded-circle align-text-center text-nowrap">
                 {% endif %}
 
                 <h5 class="fw-semibold mt-2">{{ target_user.get_full_name|default:target_user.username }}</h5>
-                <p class="text-primary mb-3" style="font-size: .9rem;">
+                <p class="text-danger mb-3" style="font-size: .9rem;">
                     {{ target_perfil.get_nivel_acesso_display }}
                 </p>
 
                 {% if not is_editing_other %}
-                    <a href="{% url 'password_change' %}" class="btn btn-outline-secondary btn-sm">
+                    <a href="{% url 'password_change' %}" class="btn btn-outline-danger btn-sm">
                         Alterar Senha
                     </a>
                 {% endif %}
@@ -55,7 +55,7 @@
                     {% endfor %}
 
                     <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary px-4">Salvar Alterações</button>
+                        <button type="submit" class="btn btn-danger px-4">Salvar Alterações</button>
 
                         {% if is_editing_other %}
                             <a href="{% url 'gerenciar_usuarios' %}" class="btn btn-outline-secondary px-4">Cancelar</a>

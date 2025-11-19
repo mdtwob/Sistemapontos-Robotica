@@ -54,10 +54,10 @@
                         <input type="text" id="cpf-filter" class="form-control" maxlength="11" placeholder="00000000000">
                     </div>
 
-                    <button class="btn btn-primary w-100 py-2">Visualizar</button>
+                    <button class="btn btn-danger w-100 py-2">Visualizar</button>
                 </form>
 
-                <button onclick="generatePdfSimulation()" class="btn btn-secondary w-100 mt-2 py-2">
+                <button onclick="generatePdfSimulation()" class="btn btn-dark w-100 mt-2 py-2">
                     Gerar PDF
                 </button>
             </div>
@@ -66,9 +66,10 @@
         <!-- CARD RESULTADOS -->
         <div class="col-lg-8 col-md-7">
             <div class="card shadow-sm p-3">
-                <h5 class="mb-2">Resultado <span id="periodo-display" class="text-muted"></span></h5>
-                <div id="relatorio-output" class="mt-3" style="min-height:120px;">
-                    <div class="alert alert-info text-center">
+                <h5 class="mb-2">Resultado</h5>
+                <span id="periodo-display" class="text-muted"></span>
+                <div id="relatorio-output" class="mt-3">
+                    <div class="alert alert-danger text-center">
                         Configure os filtros e clique em <strong>Visualizar</strong>.
                     </div>
                 </div>
@@ -146,11 +147,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Data</th>
-                        <th>Hora</th>
-                        <th>Nome</th>
-                        <th>CPF</th>
-                        <th>Tipo</th>
+                        <th style="padding: 10px 15px;">Data</th>
+                        <th style="padding: 10px 15px;">Hora</th>
+                        <th style="padding: 10px 15px;">Nome</th>
+                        <th style="padding: 10px 15px;">CPF</th>
+                        <th style="padding: 10px 15px;">Tipo</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -160,11 +161,11 @@
             const tipoColor = ponto.tipo === 'ENTRADA' ? 'var(--success-color)' : 'var(--danger-color)';
             tableHTML += `
                 <tr>
-                    <td>${ponto.data}</td>
-                    <td>${ponto.hora}</td>
-                    <td>${ponto.nome} (${ponto.nivel})</td>
-                    <td>${ponto.cpf}</td>
-                    <td style="color: ${tipoColor}; font-weight: 600;">${ponto.tipo}</td>
+                    <td style="padding: 10px 15px;">${ponto.data}</td>
+                    <td style="padding: 10px 15px;">${ponto.hora}</td>
+                    <td style="padding: 10px 15px;">${ponto.nome} (${ponto.nivel})</td>
+                    <td style="padding: 10px 15px;">${ponto.cpf}</td>
+                    <td style="style=padding: 10px 15px; color: ${tipoColor}; font-weight: 600;">${ponto.tipo}</td>
                 </tr>
             `;
         });
