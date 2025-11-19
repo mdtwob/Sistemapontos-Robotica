@@ -31,13 +31,14 @@ A gestão eficiente da frequência é crucial para o sucesso e a sustentabilidad
 
 ### ⚙️ Tecnologias Utilizadas
 
-Este sistema foi construído utilizando tecnologias modernas e eficientes:
+Este sistema foi construído utilizando tecnologias modernas e robustas para garantir escalabilidade e uma interface amigável:
 
 | Categoria | Tecnologia | Uso Principal |
 | :--- | :--- | :--- |
-| **Frontend** | HTML5, CSS3 | Estrutura e Estilização da interface de relatório. |
-| **Lógica** | JavaScript (ES6+) | Processamento de dados, manipulação do DOM e geração dinâmica da tabela. |
-| **Estilo** | CSS (Separado) | Padronização de cores, espaçamento e responsividade da tabela. |
+| **Backend** | **Django** (Python) | Estrutura de aplicação (MVC), rotas, ORM para banco de dados e renderização de templates. |
+| **Frontend** | HTML5, **Bootstrap** | Estrutura da interface e estilização base com classes prontas (responsividade e componentes). |
+| **Lógica** | JavaScript (ES6+) | Geração dinâmica de conteúdo, manipulação do DOM e a função de `renderizarTabela`. |
+| **Estilo** | CSS Personalizado | Ajustes finos de design e customização de cores além do padrão Bootstrap. |
 
 ### 🤝 Como Contribuir
 
